@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  scraper:
+    build: ./Scraper
+    depends_on:
+      - mongo
+    volumes:
+      - ./Scraper/eventos:/app/eventos
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/app1db
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 1gb
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  pig:
+    build: ./Pig
+    container_name: pig2
+    stdin_open: true
+    tty: true
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+    depends_on:
+      - mongo
+    volumes:
+      - ./Scraper/eventos:/pig/eventos
+      - ./Pig:/pig/scripts
+
+volumes:
+  mongodb_data:
